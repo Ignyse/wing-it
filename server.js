@@ -10,7 +10,12 @@ wss.on("connection", (socket) => {
     console.log("Received:", data.toString());
 
     // Send a message BACK to that client
-    socket.send("Got your message: " + data);
+    wss.clients.forEach((client) => {
+        if (client.readyState == WebSocket.OPEN){
+            client.send(data.toString());
+        }
+    });
+    // socket.send("Got your message: " + data);
   });
 
   socket.on("close", () => {
