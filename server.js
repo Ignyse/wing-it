@@ -23,9 +23,9 @@ wss.on("connection", (socket) => {
   // Listen for messages FROM the client
   socket.on("message", (data) => {
     // 
-    if (game.getHost()==playerId && game.getGameState()=='playing'){
+    if (game.getHost()==playerId && game.getGameState().status=='playing'){
         console.log("Received:", data.toString());
-        sentence = game.createGameSentence;
+        sentence = game.createGameSentence(data.toString());
         broadcastExceptSender(sentence, socket);
   }
     

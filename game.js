@@ -62,6 +62,7 @@ function startRound(){
 }
 function createGameSentence(sentence){
     let words = sentence.split(" ");
+    console.log(`words: ${words}`)
     let len = words.length
     let gameSentence = words.slice(0,Math.floor(len/2)).join(" ");
     return gameSentence
