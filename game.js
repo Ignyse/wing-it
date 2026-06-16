@@ -1,5 +1,7 @@
 let gameState = { players: {}, round: 0, status: 'unavailable'};
-
+function reset(){
+    gameState = { players: {}, round: 0, status: 'unavailable'};
+}
 function getGameState(){
     return gameState;
 }
@@ -13,6 +15,7 @@ function checkMinPlayers(){
     if ( Object.keys(gameState.players).length >=3){
         gameState.status = 'waiting'
     };
+    return Object.keys(gameState.players).length;
 }
 function getPlayer(id){
     const player = gameState.players[id];
@@ -24,4 +27,4 @@ function handleAction(message){
 }
 
 
-module.exports = { addPlayer, getPlayer,checkMinPlayers,getGameState, handleAction };
+module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, handleAction };

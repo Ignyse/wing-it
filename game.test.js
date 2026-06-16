@@ -32,13 +32,21 @@ test("addPlayer creates a player with score 0", () => {
   assert(player.score === 0, `expected 0 got ${player.score}`);
 });
 
-test("checkMinPlayer, min 3 player attained", () => {
+test("checkMinPlayer, 3 player are connected, correct status change", () => {
+  game.reset();
   game.addPlayer();
   game.addPlayer();
   game.addPlayer();
   game.checkMinPlayers()
-  const status = game.getGameState().status
+  const status = game.getGameState().status;
   assert(status === 'waiting', `expected waiting status got ${status}`);
 });
 
 
+test("checkMinPlayer, Not enough player to start a game", () => {
+  game.reset();
+  game.addPlayer();
+  game.addPlayer();
+  const status = game.getGameState().status;
+  assert(status === 'unavailable', `expected unavailable status got ${status}`);
+});
