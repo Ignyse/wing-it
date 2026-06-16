@@ -1,12 +1,12 @@
-let gameState = { players: {}, round: 0, status: 'unavailable'};
+let gameState = { players: {}, round: 1, status: 'unavailable', host: -1};
 
 function reset(){
-    gameState = { players: {}, round: 0, status: 'unavailable'};
+    gameState = { players: {}, round: 1, status: 'unavailable', host: -1};
 }
 
 function resetGameSamePlayers(){
     gameState.status = 'waiting'
-    gameState.round = 0
+    gameState.round = 1
     // reset scores
     Object.entries(gameState.players).forEach(([id, player]) => {
         gameState.players[id].score =0;
@@ -43,9 +43,32 @@ function canStartGame(){
     }
     else return false
 }
+
+function selectHost(){
+    keys = Object.keys(gameState.players);
+    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+    gameState.host = randomKey;
+    return gameState.host
+}
+
+function getHost(){
+    // if -1 no host
+    return gameState.host
+}
+function startRound(){
+    gameState.status = "playing";
+    selectHost();
+}
+function createGameSentence(sentence){
+    let words = sentence.split(" ");
+    let len = words.length
+    let gameSentence = words.slice(0,Math.floor(len/2)).join(" ");
+    return gameSentence
+}
 function handleAction(message){
 
 }
 
 
-module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, handleAction,resetGameSamePlayers };
+module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
+    getHost, selectHost, startRound, handleAction,resetGameSamePlayers,createGameSentence };
