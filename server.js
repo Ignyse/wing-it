@@ -2,10 +2,11 @@ const WebSocket = require("ws");
 
 const game = require("./game");
 const wss = new WebSocket.Server({ port: 8080 });
+let counter = 0 
 
 wss.on("connection", (socket) => {
   console.log("A client connected!");
-
+    counter++;
   // Listen for messages FROM the client
   socket.on("message", (data) => {
     console.log("Received:", data.toString());
@@ -20,7 +21,9 @@ wss.on("connection", (socket) => {
   });
 
   socket.on("close", () => {
+    counter--;
     console.log("Client disconnected");
+    console.log("Current clients connected: "+counter)
   });
 });
 
