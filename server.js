@@ -9,19 +9,14 @@ wss.on("connection", (socket) => {
   console.log("A client connected!");
   counter++;
   const playerId = game.addPlayer();
-  const result = game.startGame();
+  const result = game.canStartGame();
   if (result) broadcastGameStart();
   // Listen for messages FROM the client
   socket.on("message", (data) => {
     console.log("Received:", data.toString());
 
     // Send a message BACK to that client
-    wss.clients.forEach((client) => {
-        if (client != socket && client.readyState == WebSocket.OPEN){
-            client.send(data.toString());
-        }
-    });
-    // socket.send("Got your message: " + data);
+    broadcastExceptSender(data, socket);
   });
 
   socket.on("close", () => {
@@ -31,6 +26,13 @@ wss.on("connection", (socket) => {
   });
 });
 
+function broadcastExceptSender(data,socket){
+     wss.clients.forEach((client) => {
+        if (client != socket && client.readyState == WebSocket.OPEN){
+            client.send(data.toString());
+        }
+    });
+}
 function broadcastAll(res){
     wss.clients.forEach((client) => {
         if (client.readyState == WebSocket.OPEN){

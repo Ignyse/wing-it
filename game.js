@@ -24,7 +24,7 @@ function getPlayer(id){
     if (!player) throw new Error(`Player ${id} not found`);
     return player;
 }
-function startGame(){
+function canStartGame(){
     if (gameState.status == 'waiting'){
         console.log('Starting the game')
         return true
@@ -36,4 +36,4 @@ function handleAction(message){
 }
 
 
-module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, startGame, handleAction };
+module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, handleAction };
