@@ -58,6 +58,7 @@ function getHost(){
 function startRound(){
     gameState.status = "playing";
     selectHost();
+    console.log(`Host is ${getHost()}`);
 }
 function createGameSentence(sentence){
     let words = sentence.split(" ");

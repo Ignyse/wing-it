@@ -15,6 +15,10 @@ wss.on("connection", (socket) => {
   if (result) {
     broadcastGameStart();
     game.startRound();
+    if (game.getHost() != -1){
+        const host= sockets[game.getHost()];
+        host.send("You are the host");
+    }
   }
   // Listen for messages FROM the client
   socket.on("message", (data) => {
