@@ -1,7 +1,7 @@
-let gameState = { players: {}, round: 1, status: 'unavailable', host: -1};
+let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
 
 function reset(){
-    gameState = { players: {}, round: 1, status: 'unavailable', host: -1};
+    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence, playerSentences: []};
 }
 
 function resetGameSamePlayers(){
@@ -11,6 +11,19 @@ function resetGameSamePlayers(){
     Object.entries(gameState.players).forEach(([id, player]) => {
         gameState.players[id].score =0;
     });
+}
+
+function newRound(){
+    if (gameState.round <= 5){
+        gameState.round++;
+        gameState.hostSentence = "";
+        gameState.shortSentence = "";
+        gameState.playerSentences = [];
+    }
+    else endGame();
+}
+function endGame(){
+
 }
 function getGameState(){
     return gameState;
@@ -65,7 +78,14 @@ function createGameSentence(sentence){
     console.log(`words: ${words}`)
     let len = words.length
     let gameSentence = words.slice(0,Math.floor(len/2)).join(" ");
+    gameState.shortSentence = gameSentence;
     return gameSentence
+}
+
+function addPlayerEnding(ending){
+    const newSentence = gameState.shortSentence + ending;
+    gameState.playerSentences.push(newSentence)
+    console.log(`Added new sentence: ${newSentence}`);
 }
 function handleAction(message){
 
@@ -73,4 +93,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, startRound, handleAction,resetGameSamePlayers,createGameSentence };
+    getHost, selectHost, startRound, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence };
