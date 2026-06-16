@@ -15,13 +15,13 @@ wss.on("connection", (socket) => {
   socket.on("message", (data) => {
     console.log("Received:", data.toString());
 
-    // Send a message BACK to that client
     broadcastExceptSender(data, socket);
   });
 
   socket.on("close", () => {
     counter--;
-    console.log("Client disconnected");
+    game.removePlayer(playerId);
+    console.log(`Client disconnected ${playerId}`);
     console.log("Current clients connected: "+counter)
   });
 });
@@ -33,6 +33,7 @@ function broadcastExceptSender(data,socket){
         }
     });
 }
+
 function broadcastAll(res){
     wss.clients.forEach((client) => {
         if (client.readyState == WebSocket.OPEN){
@@ -46,9 +47,7 @@ function startCountdown(onTick, onDone){
     const interval = setInterval( ()=> {
         onTick(count);
         count --;
-
         if (count <= 0){
-
             clearInterval(interval);
             setTimeout(onDone, 1000);
         }

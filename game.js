@@ -13,6 +13,9 @@ function addPlayer(){
     checkMinPlayers();
     return id;
 }
+function removePlayer(id){
+    delete gameState.players[id];
+}
 function checkMinPlayers(){
     if ( Object.keys(gameState.players).length >=3){
         gameState.status = 'waiting'
@@ -36,4 +39,4 @@ function handleAction(message){
 }
 
 
-module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, handleAction };
+module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, handleAction };
