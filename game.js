@@ -3,6 +3,15 @@ let gameState = { players: {}, round: 0, status: 'unavailable'};
 function reset(){
     gameState = { players: {}, round: 0, status: 'unavailable'};
 }
+
+function resetGameSamePlayers(){
+    gameState.status = 'waiting'
+    gameState.round = 0
+    // reset scores
+    Object.entries(gameState.players).forEach(([id, player]) => {
+        gameState.players[id].score =0;
+    });
+}
 function getGameState(){
     return gameState;
 }
@@ -39,4 +48,4 @@ function handleAction(message){
 }
 
 
-module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, handleAction };
+module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, handleAction,resetGameSamePlayers };

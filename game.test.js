@@ -50,3 +50,18 @@ test("checkMinPlayer, Not enough player to start a game", () => {
   const status = game.getGameState().status;
   assert(status === 'unavailable', `expected unavailable status got ${status}`);
 });
+
+
+test("resetGameSamePlayers, Scores and round should be all 0", () => {
+    game.reset();
+    game.addPlayer();
+    game.addPlayer();
+    const id = game.addPlayer();
+    game.getGameState().players[id].score=1;
+    game.resetGameSamePlayers();
+    const allZero = Object.values(game.getGameState().players)
+    .every(player => player.score === 0);
+
+    assert(allZero, "all scores should be 0");
+    assert(game.getGameState().round === 0, "round should be 0");
+});
