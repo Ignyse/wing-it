@@ -1,5 +1,6 @@
 const WebSocket = require("ws");
 
+// holds same instance of game while server on (caches in memory all the objects)
 const game = require("./game");
 const wss = new WebSocket.Server({ port: 8080 });
 let counter = 0 
