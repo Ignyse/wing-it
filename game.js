@@ -79,18 +79,29 @@ function createGameSentence(sentence){
     let len = words.length
     let gameSentence = words.slice(0,Math.floor(len/2)).join(" ");
     gameState.shortSentence = gameSentence;
+    gameState.status= "answering";
     return gameSentence
 }
-
-function addPlayerEnding(ending){
-    const newSentence = gameState.shortSentence + ending;
-    gameState.playerSentences.push(newSentence)
-    console.log(`Added new sentence: ${newSentence}`);
+function startVoting(){
+    gameState.status="voting"
 }
+function addPlayerEnding(ending, playerId){
+    const sentence = gameState.shortSentence + ending;
+    gameState.playerSentences.push({sentence, host: playerId})
+    console.log(`Added new sentence: ${sentence}`);
+}
+
+function getAllEndings(){
+    // add the host sentence too
+    gameState.playerSentences.push({sentence: gameState.hostSentence, host: gameState.host});
+    const sentences = gameState.playerSentences.map(item => item.sentence);
+    return sentences;
+}
+
 function handleAction(message){
 
 }
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, startRound, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence };
+    getHost, selectHost, startRound, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getAllEndings};

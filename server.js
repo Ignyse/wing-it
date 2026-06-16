@@ -17,7 +17,8 @@ wss.on("connection", (socket) => {
     game.startRound();
     if (game.getHost() != -1){
         const host= sockets[game.getHost()];
-        host.send("You are the host");
+        // host.send("You are the host");
+        host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
     }
   }
   // Listen for messages FROM the client
@@ -27,7 +28,12 @@ wss.on("connection", (socket) => {
         console.log("Received:", data.toString());
         sentence = game.createGameSentence(data.toString());
         broadcastExceptSender(sentence, socket);
+        runRound();
   }
+    if (game.getHost() != playerId && game.getGameState().status=='answering'){
+        game.addPlayerEnding(data.toString(),playerId);
+
+    }
     
   });
 
@@ -43,7 +49,8 @@ wss.on("connection", (socket) => {
 function broadcastExceptSender(data,socket){
      wss.clients.forEach((client) => {
         if (client != socket && client.readyState == WebSocket.OPEN){
-            client.send(data.toString());
+            // client.send(data.toString());
+            client.send(JSON.stringify({ type: "broadcast", text: data.toString() }));
         }
     });
 }
@@ -51,13 +58,14 @@ function broadcastExceptSender(data,socket){
 function broadcastAll(res){
     wss.clients.forEach((client) => {
         if (client.readyState == WebSocket.OPEN){
-            client.send(res.toString());
+            // client.send(res.toString());
+            client.send(JSON.stringify({ type: "broadcast", text: res.toString() }));
         }
     });
 }
 
-function startCountdown(onTick, onDone){
-    let count = 5 // 5 seconds
+function startCountdown(onTick, onDone, time){
+    let count = time // 5 seconds
     const interval = setInterval( ()=> {
         onTick(count);
         count --;
@@ -71,11 +79,23 @@ function startCountdown(onTick, onDone){
 function broadcastGameStart(){
     startCountdown(
         (count) => broadcastAll(`Game Starting in ${count}`),
-        () => broadcastAll('Game Started !')
+        () => broadcastAll('Game Started !'),
+        5
     );
 }
 
 async function runRound(){
+    broadcastAll(`Time left to write:`);
+    startCountdown(
+        (count) => broadcastAll(`${count} s`),
+        () => {broadcastAll(`Time's up`); game.startVoting() },
+        10
+    );
+    wss.clients.forEach((client) => {
+        if (client.readyState == WebSocket.OPEN){
+            client.send(JSON.stringify({ type: "showSentences", sentences: game.getAllEndings() }));
+        }});
+    
     // user need to write his sentence
 
     // logic for his sentence
