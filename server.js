@@ -25,21 +25,34 @@ wss.on("connection", (socket) => {
         });
     }
   }
-  // Listen for messages FROM the client
-  socket.on("message", (data) => {
-    // 
-    if (game.getHost()==playerId && game.getGameState().status=='playing'){
-        console.log("Received:", data.toString());
-        sentence = game.createGameSentence(data.toString());
-        broadcastExceptSender(sentence, socket);
-        runRound();
-  }
-    if (game.getHost() != playerId && game.getGameState().status=='answering'){
-        game.addPlayerEnding(data.toString(),playerId);
 
+  socket.addEventListener("message", (e) => {
+    const msg = JSON.parse(e.data);
+    switch(msg.type){
+        case "sentence":
+            handlePlayers(playerId,socket, msg.sentence);
+            break;
+        case "vote":
+            handleVotes(playerId,msg.votedFor);
+            break;
     }
+});
+
+//   // Listen for messages FROM the client
+//   socket.on("message", (data) => {
+//     // 
+//     if (game.getHost()==playerId && game.getGameState().status=='playing'){
+//         console.log("Received:", data.toString());
+//         sentence = game.createGameSentence(data.toString());
+//         broadcastExceptSender(sentence, socket);
+//         runRound();
+//   }
+//     if (game.getHost() != playerId && game.getGameState().status=='answering'){
+//         game.addPlayerEnding(data.toString(),playerId);
+
+//     }
     
-  });
+//   });
 
   socket.on("close", () => {
     counter--;
@@ -50,6 +63,25 @@ wss.on("connection", (socket) => {
   });
 });
 
+// FUNCTION HANDLING DATA FROM CLIENTS (players)
+function handlePlayers(playerId, socket, data){
+    // do i really NEED the socket ? thought for future
+    if (game.getHost()==playerId && game.getGameState().status=='playing'){
+        console.log("Received:", data.toString());
+        sentence = game.createGameSentence(data.toString());
+        broadcastExceptSender(sentence, socket);
+        runRound();
+  }
+  if (game.getHost() != playerId && game.getGameState().status=='answering'){
+        game.addPlayerEnding(data.toString(),playerId);
+}
+}
+
+function handleVotes(playerId, votedFor){
+    if (game.getGameState().status=='voting'){
+        game.manageVotes(playerId,votedFor);
+    }
+}
 function broadcastExceptSender(data,socket){
      wss.clients.forEach((client) => {
         if (client != socket && client.readyState == WebSocket.OPEN){
@@ -127,6 +159,8 @@ async function runRound(){
         game.getConstants().voteTime
     );
     broadcastAll(`Vote finished.`);
+    broadcastAll(JSON.stringify(game.showVotes()));
+    await sleep(4000);
     let nextRound = game.newRound();
     if (nextRound){
         broadcastAll(`Next round starting in:`);

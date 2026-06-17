@@ -1,5 +1,7 @@
 let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 1, voteTime: 1, startTime: 1, totalRounds:5}
+let constants = {answerTime: 9, voteTime: 4, startTime: 1, totalRounds:2}
+let stillNotVoted = {};
+let scores = {}; // by id hmap
 function reset(){
     gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "",shortSentence:"", playerSentences: []};
 }
@@ -96,6 +98,12 @@ function createGameSentence(sentence){
 }
 function startVoting(){
     gameState.status="voting"
+    stillNotVoted = Object.fromEntries(
+        Object.keys(gameState.players).map(id => [id, 1])
+    );
+    scores = Object.fromEntries(
+        Object.keys(gameState.players).map(id => [id, 0])
+    );
 }
 function addPlayerEnding(ending, playerId){
     const sentence = gameState.shortSentence + ending;
@@ -110,11 +118,22 @@ function getAllEndings(){
     return sentences;
 }
 
+function manageVotes(playerId, votedForId){
+    // need startvoting called before 
+    if (stillNotVoted[playerId]==1){
+        stillNotVoted[playerId]=0;
+        scores[votedForId]++;
+    }
+}
 
+function showVotes(){
+    console.log(scores);
+    return scores;
+}
 function handleAction(message){
 
 }
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getConstants,getRound, getAllEndings};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings};
