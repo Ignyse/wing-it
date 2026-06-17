@@ -17,8 +17,12 @@ wss.on("connection", (socket) => {
     game.newRound();
     if (game.getHost() != -1){
         const host= sockets[game.getHost()];
-        // host.send("You are the host");
+        const hostId=game.getHost();
         host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
+        Object.entries(sockets).forEach(([id, socket]) => {
+        if (id == hostId) return; 
+            socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
+        });
     }
   }
   // Listen for messages FROM the client
@@ -138,8 +142,12 @@ async function runRound(){
         
         if (game.getHost() != -1){
             const host= sockets[game.getHost()];
-            // host.send("You are the host");
+            const hostId=game.getHost();
             host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
+            Object.entries(sockets).forEach(([id, socket]) => {
+            if (id == hostId) return; 
+                socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
+            });
         }
     }
     else{
