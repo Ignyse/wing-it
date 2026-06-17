@@ -110,10 +110,12 @@ async function runRound(){
     await sleep(1000); // wait 1 second
     broadcastAll(`Time's up`); 
     game.startVoting();
+    // need to call here otherwise duplicates
+    let endings = game.getAllEndings();
     wss.clients.forEach((client) => {
         console.log("state:", client.readyState);
         if (client.readyState == WebSocket.OPEN){
-            client.send(JSON.stringify({ type: "showSentences", sentences: game.getAllEndings() }));
+            client.send(JSON.stringify({ type: "showSentences", sentences: endings }));
         }});
     
     // user need to write his sentence
