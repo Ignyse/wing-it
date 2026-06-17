@@ -38,22 +38,6 @@ wss.on("connection", (socket) => {
     }
 });
 
-//   // Listen for messages FROM the client
-//   socket.on("message", (data) => {
-//     // 
-//     if (game.getHost()==playerId && game.getGameState().status=='playing'){
-//         console.log("Received:", data.toString());
-//         sentence = game.createGameSentence(data.toString());
-//         broadcastExceptSender(sentence, socket);
-//         runRound();
-//   }
-//     if (game.getHost() != playerId && game.getGameState().status=='answering'){
-//         game.addPlayerEnding(data.toString(),playerId);
-
-//     }
-    
-//   });
-
   socket.on("close", () => {
     counter--;
     delete sockets[playerId];  
@@ -137,6 +121,21 @@ function broadcastGameStart(){
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function waitUntilOrTimeout(conditionFn, timeoutMs, checkInterval = 200) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+
+    const interval = setInterval(() => {
+      if (conditionFn() || Date.now() - start >= timeoutMs) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, checkInterval);
+  });
+}
+
+
 async function runRound(){
     broadcastAll(`Time left to write:`);
     await startCountdownPromise(
@@ -163,7 +162,13 @@ async function runRound(){
     );
     broadcastAll(`Vote finished.`);
     broadcastAll(JSON.stringify(game.showVotes()));
-    await sleep(4000);
+    await sleep(game.getConstants().scoreTime*1000);
+    // need to add this to like before everyone pass with a safety timer
+    await waitUntilOrTimeout(
+        // function doesnt exist yet
+        () => game.allPlayerNextRound(),
+        game.getConstants().afkTime * 1000
+        );
     let nextRound = game.newRound();
     if (nextRound){
         broadcastAll(`Next round starting in:`);
@@ -183,7 +188,7 @@ async function runRound(){
             host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
             Object.entries(sockets).forEach(([id, socket]) => {
             if (id == hostId) return; 
-                socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
+                socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host to confuse others!" }));
             });
         }
     }

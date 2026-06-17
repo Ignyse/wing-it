@@ -1,5 +1,5 @@
 let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 9, voteTime: 4, startTime: 1, totalRounds:2}
+let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10,afkTime: 20, totalRounds:2}
 let stillNotVoted = {};
 // let scores = {}; // by id hmap
 function reset(){
