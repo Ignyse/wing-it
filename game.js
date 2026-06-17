@@ -1,16 +1,44 @@
-let gameState = { players: {}, round: 0, status: 'unavailable'};
-
+let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
+let constants = {answerTime: 1, voteTime: 1, startTime: 1, totalRounds:5}
 function reset(){
-    gameState = { players: {}, round: 0, status: 'unavailable'};
+    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "",shortSentence:"", playerSentences: []};
 }
 
+function getConstants(){
+    return constants;
+}
 function resetGameSamePlayers(){
     gameState.status = 'waiting'
-    gameState.round = 0
+    gameState.round = 1
     // reset scores
     Object.entries(gameState.players).forEach(([id, player]) => {
         gameState.players[id].score =0;
     });
+}
+function getRound(){
+    // well i do -1 because i immediately increment after new round happens...
+    if (gameState.round == 1){
+        return 1
+    }
+    else return gameState.round - 1 
+}
+function newRound(){
+    if (gameState.round <= constants.totalRounds){
+        gameState.round++;
+        gameState.hostSentence = "";
+        gameState.shortSentence = "";
+        gameState.playerSentences = [];
+        gameState.status="playing";
+        selectHost();
+        return true;
+    }
+    else {
+        reset();
+        return false;
+    }
+}
+function endGame(){
+    reset()
 }
 function getGameState(){
     return gameState;
@@ -43,9 +71,50 @@ function canStartGame(){
     }
     else return false
 }
+
+function selectHost(){
+    keys = Object.keys(gameState.players);
+    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+    gameState.host = randomKey;
+    return gameState.host
+}
+
+function getHost(){
+    // if -1 no host
+    return gameState.host
+}
+
+function createGameSentence(sentence){
+    gameState.hostSentence = sentence;
+    let words = sentence.split(" ");
+    console.log(`words: ${words}`)
+    let len = words.length
+    let gameSentence = words.slice(0,Math.floor(len/2)).join(" ");
+    gameState.shortSentence = gameSentence;
+    gameState.status= "answering";
+    return gameSentence
+}
+function startVoting(){
+    gameState.status="voting"
+}
+function addPlayerEnding(ending, playerId){
+    const sentence = gameState.shortSentence + ending;
+    gameState.playerSentences.push({sentence, host: playerId})
+    console.log(`Added new sentence: ${sentence}`);
+}
+
+function getAllEndings(){
+    // add the host sentence too
+    gameState.playerSentences.push({sentence: gameState.hostSentence, host: gameState.host});
+    const sentences = gameState.playerSentences.map(item => item.sentence);
+    return sentences;
+}
+
+
 function handleAction(message){
 
 }
 
 
-module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, handleAction,resetGameSamePlayers };
+module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getConstants,getRound, getAllEndings};
