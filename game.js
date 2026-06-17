@@ -1,5 +1,5 @@
 let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 1, voteTime: 1, startTime: 1}
+let constants = {answerTime: 1, voteTime: 1, startTime: 1, totalRounds:5}
 function reset(){
     gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "",shortSentence:"", playerSentences: []};
 }
@@ -17,7 +17,7 @@ function resetGameSamePlayers(){
 }
 
 function newRound(){
-    if (gameState.round <= 5){
+    if (gameState.round <= constants.totalRounds){
         gameState.round++;
         gameState.hostSentence = "";
         gameState.shortSentence = "";

@@ -154,12 +154,5 @@ async function runRound(){
         broadcastAll(`Game finished. Player XX won.`);
     }
     
-    // user need to write his sentence
-
-    // logic for his sentence
-
-    // shown to all the other
-
-    // guessing
 }
 console.log("WebSocket server running on ws://localhost:8080");
