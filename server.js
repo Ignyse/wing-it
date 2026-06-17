@@ -117,6 +117,34 @@ async function runRound(){
         if (client.readyState == WebSocket.OPEN){
             client.send(JSON.stringify({ type: "showSentences", sentences: endings }));
         }});
+    broadcastAll(`Time left to vote:`);
+    await startCountdownPromise(
+        (count) => broadcastAll(`${count} s`),
+        5
+    );
+    broadcastAll(`Vote finished.`);
+    let nextRound = game.newRound();
+    if (nextRound){
+        broadcastAll(`Next round starting in:`);
+        wss.clients.forEach((client) => {
+        console.log("state:", client.readyState);
+        if (client.readyState == WebSocket.OPEN){
+            client.send(JSON.stringify({ type: "newRound"}));
+        }});
+        await startCountdownPromise(
+            (count) => broadcastAll(`${count} s`),
+            5
+        );
+        
+        if (game.getHost() != -1){
+            const host= sockets[game.getHost()];
+            // host.send("You are the host");
+            host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
+        }
+    }
+    else{
+        broadcastAll(`Game finished. Player XX won.`);
+    }
     
     // user need to write his sentence
 

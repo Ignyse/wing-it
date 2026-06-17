@@ -8,8 +8,10 @@ socket.addEventListener("message", (e) => {
             log("Server: " + msg.text);
             break;
         case "showSentences":
-            console.log("am i here");
             addVotes(msg.sentences);
+            break;
+        case "newRound":
+            removeButtons();
             break;
     }
     
@@ -40,4 +42,11 @@ function addVotes(sentences){
     });
 
 
+}
+
+function removeButtons(){
+    const container = document.getElementById("container")
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
 }

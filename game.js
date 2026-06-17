@@ -19,11 +19,17 @@ function newRound(){
         gameState.hostSentence = "";
         gameState.shortSentence = "";
         gameState.playerSentences = [];
+        gameState.status="playing";
+        selectHost();
+        return true;
     }
-    else endGame();
+    else {
+        reset();
+        return false;
+    }
 }
 function endGame(){
-
+    reset()
 }
 function getGameState(){
     return gameState;
@@ -98,6 +104,7 @@ function getAllEndings(){
     const sentences = gameState.playerSentences.map(item => item.sentence);
     return sentences;
 }
+
 
 function handleAction(message){
 
