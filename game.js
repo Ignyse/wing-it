@@ -74,6 +74,7 @@ function startRound(){
     console.log(`Host is ${getHost()}`);
 }
 function createGameSentence(sentence){
+    gameState.hostSentence = sentence;
     let words = sentence.split(" ");
     console.log(`words: ${words}`)
     let len = words.length

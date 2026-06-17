@@ -76,6 +76,21 @@ function startCountdown(onTick, onDone, time){
     }, 1000)
 }
 
+function startCountdownPromise(onTick, time){
+    return new Promise((resolve) =>{
+        let count = time // 5 seconds
+        const interval = setInterval( ()=> {
+        onTick(count);
+        count --;
+        if (count <= 0){
+            clearInterval(interval);
+            resolve();
+        }
+    }, 1000)
+    });
+    
+}
+
 function broadcastGameStart(){
     startCountdown(
         (count) => broadcastAll(`Game Starting in ${count}`),
@@ -83,15 +98,20 @@ function broadcastGameStart(){
         5
     );
 }
-
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 async function runRound(){
     broadcastAll(`Time left to write:`);
-    startCountdown(
+    await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
-        () => {broadcastAll(`Time's up`); game.startVoting() },
         10
     );
+    await sleep(1000); // wait 1 second
+    broadcastAll(`Time's up`); 
+    game.startVoting();
     wss.clients.forEach((client) => {
+        console.log("state:", client.readyState);
         if (client.readyState == WebSocket.OPEN){
             client.send(JSON.stringify({ type: "showSentences", sentences: game.getAllEndings() }));
         }});

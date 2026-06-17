@@ -8,7 +8,8 @@ socket.addEventListener("message", (e) => {
             log("Server: " + msg.text);
             break;
         case "showSentences":
-            addVotes(msg.sentences)
+            console.log("am i here");
+            addVotes(msg.sentences);
             break;
     }
     
@@ -32,9 +33,10 @@ function log(msg) {
 function addVotes(sentences){
     const container = document.getElementById("container");
 
-    sentences.array.forEach(element => {
+    sentences.forEach(element => {
         var btn = document.createElement("button");
         btn.textContent = element;
+        container.appendChild(btn);
     });
 
 
