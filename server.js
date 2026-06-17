@@ -148,10 +148,13 @@ async function runRound(){
     game.startVoting();
     // need to call here otherwise duplicates
     let endings = game.getAllEndings();
+    console.log(`all endings ${endings}`)
     wss.clients.forEach((client) => {
         console.log("state:", client.readyState);
         if (client.readyState == WebSocket.OPEN){
+            console.log("i entered here")
             client.send(JSON.stringify({ type: "showSentences", sentences: endings }));
+            console.log(JSON.stringify({ type: "showSentences", sentences: endings }))
         }});
     broadcastAll(`Time left to vote:`);
     await startCountdownPromise(

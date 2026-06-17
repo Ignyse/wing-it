@@ -1,7 +1,7 @@
 let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
 let constants = {answerTime: 9, voteTime: 4, startTime: 1, totalRounds:2}
 let stillNotVoted = {};
-let scores = {}; // by id hmap
+// let scores = {}; // by id hmap
 function reset(){
     gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "",shortSentence:"", playerSentences: []};
 }
@@ -114,21 +114,21 @@ function addPlayerEnding(ending, playerId){
 function getAllEndings(){
     // add the host sentence too
     gameState.playerSentences.push({sentence: gameState.hostSentence, host: gameState.host});
-    const sentences = gameState.playerSentences.map(item => item.sentence);
-    return sentences;
+    // const sentences = gameState.playerSentences.map(item => item.sentence);
+    const sentencesWithIds = gameState.playerSentences;
+    return sentencesWithIds;
 }
 
 function manageVotes(playerId, votedForId){
     // need startvoting called before 
     if (stillNotVoted[playerId]==1){
         stillNotVoted[playerId]=0;
-        scores[votedForId]++;
+        gameState.players[votedForId].score++;
     }
 }
 
 function showVotes(){
-    console.log(scores);
-    return scores;
+    return gameState.players;
 }
 function handleAction(message){
 

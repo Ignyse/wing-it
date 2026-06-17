@@ -8,6 +8,7 @@ socket.addEventListener("message", (e) => {
             log("Server: " + msg.text);
             break;
         case "showSentences":
+            console.log("went to addvote");
             addVotes(msg.sentences);
             break;
         case "newRound":
@@ -39,7 +40,7 @@ voteContainer.addEventListener("click", (e) => {
 
   // use ID instead of text
   selected = btn.dataset.id;
-  voteClicked(btn.dataset.id);
+  voteClicked(selected);
   console.log("Selected ID:", selected);
 });
 
@@ -63,13 +64,15 @@ function log(msg) {
 function addVotes(sentences){
     // need to retrieve each id specfic to each sentence
     const container = document.getElementById("container");
-
+    console.log(`sentence inside addvotes ${sentences}`)
     // sentences.forEach({a,b}=>)
-    sentences.forEach(element => {
+    sentences.forEach(({sentence,host}) => {
+        console.log(`Sentence ${sentence} with id ${host}`)
         var btn = document.createElement("button");
         btn.classList.add("vote-btn");
-        btn.dataset.id = 12;
-        btn.textContent = element;
+        console.log(`assigning id in advotes ${host}`)
+        btn.dataset.id = host;
+        btn.textContent = sentence;
         container.appendChild(btn);
     });
 
