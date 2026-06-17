@@ -1,9 +1,12 @@
 let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
-
+let constants = {answerTime: 1, voteTime: 1, startTime: 1}
 function reset(){
-    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence, playerSentences: []};
+    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "",shortSentence:"", playerSentences: []};
 }
 
+function getConstants(){
+    return constants;
+}
 function resetGameSamePlayers(){
     gameState.status = 'waiting'
     gameState.round = 1
@@ -74,11 +77,7 @@ function getHost(){
     // if -1 no host
     return gameState.host
 }
-function startRound(){
-    gameState.status = "playing";
-    selectHost();
-    console.log(`Host is ${getHost()}`);
-}
+
 function createGameSentence(sentence){
     gameState.hostSentence = sentence;
     let words = sentence.split(" ");
@@ -112,4 +111,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, startRound, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getAllEndings};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getConstants, getAllEndings};

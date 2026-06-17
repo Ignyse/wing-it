@@ -14,7 +14,7 @@ wss.on("connection", (socket) => {
   const result = game.canStartGame();
   if (result) {
     broadcastGameStart();
-    game.startRound();
+    game.newRound();
     if (game.getHost() != -1){
         const host= sockets[game.getHost()];
         // host.send("You are the host");
@@ -105,7 +105,7 @@ async function runRound(){
     broadcastAll(`Time left to write:`);
     await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
-        10
+        game.getConstants().answerTime
     );
     await sleep(1000); // wait 1 second
     broadcastAll(`Time's up`); 
@@ -120,7 +120,7 @@ async function runRound(){
     broadcastAll(`Time left to vote:`);
     await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
-        5
+        game.getConstants().voteTime
     );
     broadcastAll(`Vote finished.`);
     let nextRound = game.newRound();
@@ -133,7 +133,7 @@ async function runRound(){
         }});
         await startCountdownPromise(
             (count) => broadcastAll(`${count} s`),
-            5
+            game.getConstants().startTime
         );
         
         if (game.getHost() != -1){
