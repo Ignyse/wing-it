@@ -15,7 +15,13 @@ function resetGameSamePlayers(){
         gameState.players[id].score =0;
     });
 }
-
+function getRound(){
+    // well i do -1 because i immediately increment after new round happens...
+    if (gameState.round == 1){
+        return 1
+    }
+    else return gameState.round - 1 
+}
 function newRound(){
     if (gameState.round <= constants.totalRounds){
         gameState.round++;
@@ -111,4 +117,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getConstants, getAllEndings};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getConstants,getRound, getAllEndings};

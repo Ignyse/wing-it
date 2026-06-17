@@ -12,6 +12,8 @@ socket.addEventListener("message", (e) => {
             break;
         case "newRound":
             removeButtons();
+            cleanList();
+            showRound(msg.round);
             break;
     }
     
@@ -49,4 +51,19 @@ function removeButtons(){
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
+}
+
+function cleanList(){
+    const container = document.getElementById("log");
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+    
+}
+
+function showRound(round){
+    const li = document.createElement("li");
+    li.textContent = `Round: ${round}`;
+    document.getElementById("log").appendChild(li);
+
 }

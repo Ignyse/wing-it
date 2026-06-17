@@ -133,7 +133,7 @@ async function runRound(){
         wss.clients.forEach((client) => {
         console.log("state:", client.readyState);
         if (client.readyState == WebSocket.OPEN){
-            client.send(JSON.stringify({ type: "newRound"}));
+            client.send(JSON.stringify({ type: "newRound",round: game.getRound()}));
         }});
         await startCountdownPromise(
             (count) => broadcastAll(`${count} s`),
