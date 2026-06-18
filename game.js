@@ -1,9 +1,9 @@
-let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10,afkTime: 20, totalRounds:2}
+let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready: 0, hostSentence: "", shortSentence: "",playerSentences: [] };
+let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 1, totalRounds:2}
 let stillNotVoted = {};
 // let scores = {}; // by id hmap
 function reset(){
-    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "",shortSentence:"", playerSentences: []};
+    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready:0, hostSentence: "",shortSentence:"", playerSentences: []};
 }
 
 function getConstants(){
@@ -12,6 +12,7 @@ function getConstants(){
 function resetGameSamePlayers(){
     gameState.status = 'waiting'
     gameState.round = 1
+    gameState.ready = 0
     // reset scores
     Object.entries(gameState.players).forEach(([id, player]) => {
         gameState.players[id].score =0;
@@ -127,6 +128,17 @@ function manageVotes(playerId, votedForId){
     }
 }
 
+function addReady(){
+    gameState.ready++;
+}
+
+function removeReady(){
+    gameState.ready--;
+}
+function allReady(){
+    // true of if all players ready otherwise false
+    return gameState.ready == Object.keys(gameState.players).length
+}
 function showVotes(){
     return gameState.players;
 }
@@ -136,4 +148,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings, allReady, addReady, removeReady};

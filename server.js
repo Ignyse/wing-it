@@ -35,6 +35,12 @@ wss.on("connection", (socket) => {
         case "vote":
             handleVotes(playerId,msg.votedFor);
             break;
+        case "ready-on":
+            handleReadyOn();
+            break;
+        case "ready-off":
+            handleReadyOff();
+            break;
     }
 });
 
@@ -65,6 +71,24 @@ function handleVotes(playerId, votedFor){
     if (game.getGameState().status=='voting'){
         game.manageVotes(playerId,votedFor);
     }
+}
+
+function handleReadyOn(){
+    // should i have a game state after voting
+    game.addReady()
+}
+
+function handleReadyOff(){
+    // should i have a game state after voting
+    game.removeReady()
+}
+
+function addReadyButtonClients(){
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "readyButton" }));
+        }
+    })
 }
 function broadcastExceptSender(data,socket){
      wss.clients.forEach((client) => {
@@ -151,7 +175,6 @@ async function runRound(){
     wss.clients.forEach((client) => {
         console.log("state:", client.readyState);
         if (client.readyState == WebSocket.OPEN){
-            console.log("i entered here")
             client.send(JSON.stringify({ type: "showSentences", sentences: endings }));
             console.log(JSON.stringify({ type: "showSentences", sentences: endings }))
         }});
@@ -164,10 +187,11 @@ async function runRound(){
     broadcastAll(JSON.stringify(game.showVotes()));
     await sleep(game.getConstants().scoreTime*1000);
     // need to add this to like before everyone pass with a safety timer
+    addReadyButtonClients();
     await waitUntilOrTimeout(
         // function doesnt exist yet
-        () => game.allPlayerNextRound(),
-        game.getConstants().afkTime * 1000
+        () => game.allReady(),
+        30*1000
         );
     let nextRound = game.newRound();
     if (nextRound){

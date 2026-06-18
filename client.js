@@ -16,6 +16,9 @@ socket.addEventListener("message", (e) => {
             cleanList();
             showRound(msg.round);
             break;
+        case "readyButton":
+            addReadyButton();
+            break;
     }
     
     
@@ -99,4 +102,33 @@ function showRound(round){
     li.textContent = `Round: ${round}`;
     document.getElementById("log").appendChild(li);
 
+}
+
+function addReadyButton(){
+    const container = document.getElementById("rdyButton");
+    var btn = document.createElement("button");
+    btn.textContent = "Ready";
+    container.appendChild(btn);
+    btn.addEventListener("click", (e) => {
+        toggleReady()
+        console.log("User toggled ready:");
+    });
+}
+
+function removeReadyButton(){
+    const container = document.getElementById("rdyButton");
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+}
+function toggleReady(btn) {
+  const isTicked = btn.classList.contains("ticked");
+
+  if (isTicked) {
+    btn.classList.remove("ticked");
+    socket.send(JSON.stringify({type: 'ready-off'}))
+  } else {
+    btn.classList.add("ticked");
+    socket.send(JSON.stringify({type: 'ready-on'}))
+  }
 }
