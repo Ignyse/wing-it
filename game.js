@@ -162,6 +162,14 @@ function showScores(){
     return scores //gameState.players;
 }
 
+function showVotes(){
+    const votes = Object.entries(gameState.players).reduce((acc, [id, player]) => {
+        acc[id] = player.vote;
+        return acc;
+    }, {});
+    return votes 
+}
+
 function getWinner(){
     // returns this pattern: {"id":"2aezylw937t","score":1}
     // what happens if there is a draw?
@@ -181,4 +189,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes, showVotes};

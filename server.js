@@ -218,7 +218,7 @@ async function runRound(){
     );
     await sleep(1000); // wait 1 second
     broadcastAll(`Vote finished.`);
-    broadcastAll(JSON.stringify(game.showScores()));
+    broadcastAll(JSON.stringify(game.showVotes()));
     // need to add this to like before everyone pass with a safety timer
     addReadyButtonClients();
     await waitUntilOrTimeout(
