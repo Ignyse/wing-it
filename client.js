@@ -110,7 +110,7 @@ function addReadyButton(){
     btn.textContent = "Ready";
     container.appendChild(btn);
     btn.addEventListener("click", (e) => {
-        toggleReady()
+        toggleReady(btn)
         console.log("User toggled ready:");
     });
 }
