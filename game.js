@@ -135,6 +135,10 @@ function addReady(){
 function removeReady(){
     gameState.ready--;
 }
+function getAmountReady(){
+    console.log (`${gameState.ready}/${ Object.keys(gameState.players).length}`)
+    return `${gameState.ready}/${ Object.keys(gameState.players).length}`
+}
 function allReady(){
     // true of if all players ready otherwise false
     return gameState.ready == Object.keys(gameState.players).length
@@ -148,4 +152,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings, allReady, addReady, removeReady};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings, allReady, addReady, removeReady,getAmountReady};

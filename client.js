@@ -22,6 +22,9 @@ socket.addEventListener("message", (e) => {
         case "removeReadyButton":
             removeReadyButton();
             break;
+        case "updateReadyAmount":
+            whoReady(msg.text);
+            break;
     }
     
     
@@ -134,4 +137,9 @@ function toggleReady(btn) {
     btn.classList.add("ticked");
     socket.send(JSON.stringify({type: 'ready-on'}))
   }
+}
+
+function whoReady(text){
+    const container = document.getElementById("whoReady");
+    container.textContent = text;
 }

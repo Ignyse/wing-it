@@ -75,12 +75,25 @@ function handleVotes(playerId, votedFor){
 
 function handleReadyOn(){
     // should i have a game state after voting
-    game.addReady()
+    game.addReady();
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "updateReadyAmount", text: game.getAmountReady() }));
+        }
+    });
+    
 }
 
 function handleReadyOff(){
     // should i have a game state after voting
-    game.removeReady()
+    game.removeReady();
+    // dont know why when i put in text: getamoundready() directly it didnt call the function? anyway..
+    amountReady = game.getAmountReady()
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "updateReadyAmount", text: amountReady  }));
+        }
+    });
 }
 
 function addReadyButtonClients(){
