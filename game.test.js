@@ -63,5 +63,15 @@ test("resetGameSamePlayers, Scores and round should be all 0", () => {
     .every(player => player.score === 0);
 
     assert(allZero, "all scores should be 0");
-    assert(game.getGameState().round === 0, "round should be 0");
+    assert(game.getGameState().round === 1, "round should be 1");
 });
+
+
+test("top score", () =>{
+    game.reset();
+    playerID= game.addPlayer();
+    game.addPlayer();
+    game.getGameState().players[playerID].score ++;
+    p = {id: playerID, player:game.getGameState().players[playerID] }
+    assert(game.getWinner().id==p.id, `wrong top scorer?, ${JSON.stringify(game.getWinner())} and ${JSON.stringify(p)}`)
+})

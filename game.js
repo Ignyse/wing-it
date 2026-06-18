@@ -146,10 +146,22 @@ function allReady(){
 function showVotes(){
     return gameState.players;
 }
+
+function getWinner(){
+    const entries = Object.entries(gameState.players); 
+
+  const top = entries.reduce((best, [id, player]) => {
+    return player.score > best.player.score 
+      ? { id, player } 
+      : best;
+  }, { id: entries[0][0], player: entries[0][1] });
+
+  return top;
+}
 function handleAction(message){
 
 }
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings, allReady, addReady, removeReady,getAmountReady};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner};
