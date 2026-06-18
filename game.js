@@ -1,7 +1,9 @@
-let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 1, voteTime: 1, startTime: 1, totalRounds:5}
+let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready: 0, hostSentence: "", shortSentence: "",playerSentences: [] };
+let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 30, totalRounds:1}
+let stillNotVoted = {};
+// let scores = {}; // by id hmap
 function reset(){
-    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, hostSentence: "",shortSentence:"", playerSentences: []};
+    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready:0, hostSentence: "",shortSentence:"", playerSentences: []};
 }
 
 function getConstants(){
@@ -10,10 +12,13 @@ function getConstants(){
 function resetGameSamePlayers(){
     gameState.status = 'waiting'
     gameState.round = 1
+    gameState.ready = 0
+
     // reset scores
-    Object.entries(gameState.players).forEach(([id, player]) => {
+    Object.keys(gameState.players).forEach((id) => {
         gameState.players[id].score =0;
     });
+    resetVotes();
 }
 function getRound(){
     // well i do -1 because i immediately increment after new round happens...
@@ -30,10 +35,10 @@ function newRound(){
         gameState.playerSentences = [];
         gameState.status="playing";
         selectHost();
+        resetVotes();
         return true;
     }
     else {
-        reset();
         return false;
     }
 }
@@ -46,7 +51,8 @@ function getGameState(){
 
 function addPlayer(){
     const id = Math.random().toString(36).slice(2);
-    gameState.players[id] = {score:0};
+    gameState.players[id] = {score:0, vote:0};
+    // should i really have check min playes here
     checkMinPlayers();
     return id;
 }
@@ -96,6 +102,12 @@ function createGameSentence(sentence){
 }
 function startVoting(){
     gameState.status="voting"
+    stillNotVoted = Object.fromEntries(
+        Object.keys(gameState.players).map(id => [id, 1])
+    );
+    scores = Object.fromEntries(
+        Object.keys(gameState.players).map(id => [id, 0])
+    );
 }
 function addPlayerEnding(ending, playerId){
     const sentence = gameState.shortSentence + ending;
@@ -106,15 +118,75 @@ function addPlayerEnding(ending, playerId){
 function getAllEndings(){
     // add the host sentence too
     gameState.playerSentences.push({sentence: gameState.hostSentence, host: gameState.host});
-    const sentences = gameState.playerSentences.map(item => item.sentence);
-    return sentences;
+    // const sentences = gameState.playerSentences.map(item => item.sentence);
+    const sentencesWithIds = gameState.playerSentences;
+    return sentencesWithIds;
 }
 
+function manageVotes(playerId, votedForId){
+    // need startvoting called before 
+    if (stillNotVoted[playerId]==1){
+        stillNotVoted[playerId]=0;
+        // gameState.players[votedForId].score++;
+        gameState.players[votedForId].vote++;
+    }
+}
 
+function resetVotes(){
+    Object.keys(gameState.players).forEach((id) => {
+        gameState.players[id].vote = 0;
+    });
+}
+function addReady(){
+    gameState.ready++;
+}
+
+function removeReady(){
+    gameState.ready--;
+}
+function getAmountReady(){
+    console.log (`${gameState.ready}/${ Object.keys(gameState.players).length}`)
+    return `${gameState.ready}/${ Object.keys(gameState.players).length}`
+}
+function allReady(){
+    // true of if all players ready otherwise false
+    return gameState.ready == Object.keys(gameState.players).length
+}
+function showScores(){
+    const scores = Object.entries(gameState.players).reduce((acc, [id, player]) => {
+        acc[id] = player.score;
+        return acc;
+    }, {});
+    // const scores = (gameState.players).map((x)=>{x[0],x.score});
+    // console.log(scores);
+    return scores //gameState.players;
+}
+
+function showVotes(){
+    const votes = Object.entries(gameState.players).reduce((acc, [id, player]) => {
+        acc[id] = player.vote;
+        return acc;
+    }, {});
+    return votes 
+}
+
+function getWinner(){
+    // returns this pattern: {"id":"2aezylw937t","score":1}
+    // what happens if there is a draw?
+    const entries = Object.entries(gameState.players); 
+    // console.log(`all the players ${JSON.stringify(entries)}`)
+    const top = entries.reduce((best, [id, player]) => {
+        return player.score > best.score 
+        ? { id, score: player.score } 
+        : best;
+    }, { id: entries[0][0], score: entries[0][1].score });
+
+    return top;
+}
 function handleAction(message){
 
 }
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, getConstants,getRound, getAllEndings};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes, showVotes};

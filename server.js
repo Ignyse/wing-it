@@ -25,21 +25,24 @@ wss.on("connection", (socket) => {
         });
     }
   }
-  // Listen for messages FROM the client
-  socket.on("message", (data) => {
-    // 
-    if (game.getHost()==playerId && game.getGameState().status=='playing'){
-        console.log("Received:", data.toString());
-        sentence = game.createGameSentence(data.toString());
-        broadcastExceptSender(sentence, socket);
-        runRound();
-  }
-    if (game.getHost() != playerId && game.getGameState().status=='answering'){
-        game.addPlayerEnding(data.toString(),playerId);
 
+  socket.addEventListener("message", (e) => {
+    const msg = JSON.parse(e.data);
+    switch(msg.type){
+        case "sentence":
+            handlePlayers(playerId,socket, msg.sentence);
+            break;
+        case "vote":
+            handleVotes(playerId,msg.votedFor);
+            break;
+        case "ready-on":
+            handleReadyOn();
+            break;
+        case "ready-off":
+            handleReadyOff();
+            break;
     }
-    
-  });
+});
 
   socket.on("close", () => {
     counter--;
@@ -50,6 +53,64 @@ wss.on("connection", (socket) => {
   });
 });
 
+// FUNCTION HANDLING DATA FROM CLIENTS (players)
+function handlePlayers(playerId, socket, data){
+    // do i really NEED the socket ? thought for future
+    if (game.getHost()==playerId && game.getGameState().status=='playing'){
+        console.log("Received:", data.toString());
+        sentence = game.createGameSentence(data.toString());
+        broadcastExceptSender(sentence, socket);
+        runRound();
+  }
+  if (game.getHost() != playerId && game.getGameState().status=='answering'){
+        game.addPlayerEnding(data.toString(),playerId);
+}
+}
+
+function handleVotes(playerId, votedFor){
+    if (game.getGameState().status=='voting'){
+        game.manageVotes(playerId,votedFor);
+    }
+}
+
+function handleReadyOn(){
+    // should i have a game state after voting
+    game.addReady();
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "updateReadyAmount", text: game.getAmountReady() }));
+        }
+    });
+    
+}
+
+function handleReadyOff(){
+    // should i have a game state after voting
+    game.removeReady();
+    // dont know why when i put in text: getamoundready() directly it didnt call the function? anyway..
+    amountReady = game.getAmountReady()
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "updateReadyAmount", text: amountReady  }));
+        }
+    });
+}
+
+function addReadyButtonClients(){
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "readyButton" }));
+        }
+    })
+}
+
+function removeReadyButtonClients(){
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "removeReadyButton" }));
+        }
+    })
+}
 function broadcastExceptSender(data,socket){
      wss.clients.forEach((client) => {
         if (client != socket && client.readyState == WebSocket.OPEN){
@@ -105,6 +166,33 @@ function broadcastGameStart(){
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function waitUntilOrTimeout(conditionFn, timeoutMs, checkInterval = 200) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+
+    const interval = setInterval(() => {
+      if (conditionFn() || Date.now() - start >= timeoutMs) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, checkInterval);
+  });
+}
+
+function handleNewRound(){
+    wss.clients.forEach((client) => {
+        if (client.readyState == WebSocket.OPEN){
+            client.send(JSON.stringify({ type: "newRound",round: game.getRound()}));
+        }});
+}
+
+function handleEndGame(){
+    wss.clients.forEach((client) => {
+        if (client.readyState == WebSocket.OPEN){
+            client.send(JSON.stringify({ type: "endGame"}));
+        }});
+}
 async function runRound(){
     broadcastAll(`Time left to write:`);
     await startCountdownPromise(
@@ -116,25 +204,33 @@ async function runRound(){
     game.startVoting();
     // need to call here otherwise duplicates
     let endings = game.getAllEndings();
+    console.log(`all endings ${endings}`)
     wss.clients.forEach((client) => {
         console.log("state:", client.readyState);
         if (client.readyState == WebSocket.OPEN){
             client.send(JSON.stringify({ type: "showSentences", sentences: endings }));
+            console.log(JSON.stringify({ type: "showSentences", sentences: endings }))
         }});
     broadcastAll(`Time left to vote:`);
     await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
         game.getConstants().voteTime
     );
+    await sleep(1000); // wait 1 second
     broadcastAll(`Vote finished.`);
+    broadcastAll(JSON.stringify(game.showVotes()));
+    // need to add this to like before everyone pass with a safety timer
+    addReadyButtonClients();
+    await waitUntilOrTimeout(
+        // function doesnt exist yet
+        () => game.allReady(),
+        game.getConstants().afkTime*1000
+        );
+    removeReadyButtonClients();
     let nextRound = game.newRound();
     if (nextRound){
         broadcastAll(`Next round starting in:`);
-        wss.clients.forEach((client) => {
-        console.log("state:", client.readyState);
-        if (client.readyState == WebSocket.OPEN){
-            client.send(JSON.stringify({ type: "newRound",round: game.getRound()}));
-        }});
+        handleNewRound();
         await startCountdownPromise(
             (count) => broadcastAll(`${count} s`),
             game.getConstants().startTime
@@ -146,13 +242,19 @@ async function runRound(){
             host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
             Object.entries(sockets).forEach(([id, socket]) => {
             if (id == hostId) return; 
-                socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
+                socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host to confuse others!" }));
             });
         }
     }
     else{
-        broadcastAll(`Game finished. Player XX won.`);
+        handleEndGame();
+        const winner = game.getWinner();
+        broadcastAll(`Game finished. Player ${winner.id} won with score ${winner.score}.`);
+        game.reset();
     }
     
 }
+
+
+
 console.log("WebSocket server running on ws://localhost:8080");
