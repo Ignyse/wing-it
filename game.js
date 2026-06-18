@@ -13,10 +13,12 @@ function resetGameSamePlayers(){
     gameState.status = 'waiting'
     gameState.round = 1
     gameState.ready = 0
+
     // reset scores
     Object.keys(gameState.players).forEach((id) => {
         gameState.players[id].score =0;
     });
+    resetVotes();
 }
 function getRound(){
     // well i do -1 because i immediately increment after new round happens...
@@ -33,6 +35,7 @@ function newRound(){
         gameState.playerSentences = [];
         gameState.status="playing";
         selectHost();
+        resetVotes();
         return true;
     }
     else {
@@ -150,7 +153,13 @@ function allReady(){
     return gameState.ready == Object.keys(gameState.players).length
 }
 function showScores(){
-    return gameState.players;
+    const scores = Object.entries(gameState.players).reduce((acc, [id, player]) => {
+        acc[id] = player.score;
+        return acc;
+    }, {});
+    // const scores = (gameState.players).map((x)=>{x[0],x.score});
+    // console.log(scores);
+    return scores //gameState.players;
 }
 
 function getWinner(){

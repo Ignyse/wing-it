@@ -76,6 +76,12 @@ test("top score", () =>{
     assert(game.getWinner().id==p.id && game.getWinner().score == p.score, `wrong top scorer?, ${JSON.stringify(game.getWinner())} and ${JSON.stringify(p)}`)
 })
 
+test("show scores", ()=>{
+    game.reset();
+    game.addPlayer();
+    game.addPlayer();
+    game.showScores();
+})
 test("test resetVotes ", ()=>{
     game.reset();
     id = game.addPlayer();
