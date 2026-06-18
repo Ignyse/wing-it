@@ -29,6 +29,9 @@ socket.addEventListener("message", (e) => {
         case "updateReadyAmount":
             whoReady(msg.text);
             break;
+        case "addNewGameButton":
+            addNewGameButton();
+            break;
     }
     
     
@@ -146,4 +149,16 @@ function toggleReady(btn) {
 function whoReady(text){
     const container = document.getElementById("whoReady");
     container.textContent = text;
+}
+
+
+function addNewGameButton(){
+    const container = document.getElementById("log");
+    var btn = document.createElement("button");
+    btn.textContent = "Ready";
+    container.appendChild(btn);
+    btn.addEventListener("click", (e) => {
+        toggleReady(btn);
+        console.log("User toggled new game:");
+    });
 }

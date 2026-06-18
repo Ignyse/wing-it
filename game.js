@@ -14,7 +14,7 @@ function resetGameSamePlayers(){
     gameState.round = 1
     gameState.ready = 0
     // reset scores
-    Object.entries(gameState.players).forEach(([id, player]) => {
+    Object.keys(gameState.players).forEach((id) => {
         gameState.players[id].score =0;
     });
 }
@@ -48,7 +48,8 @@ function getGameState(){
 
 function addPlayer(){
     const id = Math.random().toString(36).slice(2);
-    gameState.players[id] = {score:0};
+    gameState.players[id] = {score:0, vote:0};
+    // should i really have check min playes here
     checkMinPlayers();
     return id;
 }
@@ -123,10 +124,16 @@ function manageVotes(playerId, votedForId){
     // need startvoting called before 
     if (stillNotVoted[playerId]==1){
         stillNotVoted[playerId]=0;
-        gameState.players[votedForId].score++;
+        // gameState.players[votedForId].score++;
+        gameState.players[votedForId].vote++;
     }
 }
 
+function resetVotes(){
+    Object.keys(gameState.players).forEach((id) => {
+        gameState.players[id].vote = 0;
+    });
+}
 function addReady(){
     gameState.ready++;
 }
@@ -142,7 +149,7 @@ function allReady(){
     // true of if all players ready otherwise false
     return gameState.ready == Object.keys(gameState.players).length
 }
-function showVotes(){
+function showScores(){
     return gameState.players;
 }
 
@@ -150,7 +157,7 @@ function getWinner(){
     // returns this pattern: {"id":"2aezylw937t","score":1}
     // what happens if there is a draw?
     const entries = Object.entries(gameState.players); 
-    console.log(`all the players ${JSON.stringify(entries)}`)
+    // console.log(`all the players ${JSON.stringify(entries)}`)
     const top = entries.reduce((best, [id, player]) => {
         return player.score > best.score 
         ? { id, score: player.score } 
@@ -165,4 +172,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showVotes, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes};

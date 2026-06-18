@@ -75,3 +75,14 @@ test("top score", () =>{
     p = {id: playerID, score:game.getGameState().players[playerID].score }
     assert(game.getWinner().id==p.id && game.getWinner().score == p.score, `wrong top scorer?, ${JSON.stringify(game.getWinner())} and ${JSON.stringify(p)}`)
 })
+
+test("test resetVotes ", ()=>{
+    game.reset();
+    id = game.addPlayer();
+    game.addPlayer();
+    game.getGameState().players[id].vote ++;
+    game.resetVotes();
+    const allZero = Object.values(game.getGameState().players)
+    .every(player => player.vote === 0);
+     assert(allZero, "all votes should be 0");
+    })
