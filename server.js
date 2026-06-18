@@ -180,7 +180,19 @@ function waitUntilOrTimeout(conditionFn, timeoutMs, checkInterval = 200) {
   });
 }
 
+function handleNewRound(){
+    wss.clients.forEach((client) => {
+        if (client.readyState == WebSocket.OPEN){
+            client.send(JSON.stringify({ type: "newRound",round: game.getRound()}));
+        }});
+}
 
+function handleEndGame(){
+    wss.clients.forEach((client) => {
+        if (client.readyState == WebSocket.OPEN){
+            client.send(JSON.stringify({ type: "endGame"}));
+        }});
+}
 async function runRound(){
     broadcastAll(`Time left to write:`);
     await startCountdownPromise(
@@ -217,11 +229,7 @@ async function runRound(){
     let nextRound = game.newRound();
     if (nextRound){
         broadcastAll(`Next round starting in:`);
-        wss.clients.forEach((client) => {
-        console.log("state:", client.readyState);
-        if (client.readyState == WebSocket.OPEN){
-            client.send(JSON.stringify({ type: "newRound",round: game.getRound()}));
-        }});
+        handleNewRound();
         await startCountdownPromise(
             (count) => broadcastAll(`${count} s`),
             game.getConstants().startTime
@@ -238,8 +246,14 @@ async function runRound(){
         }
     }
     else{
-        broadcastAll(`Game finished. Player XX won.`);
+        handleEndGame();
+        const winner = game.getWinner();
+        broadcastAll(`Game finished. Player ${winner.id} won with score ${winner.score}.`);
+        game.reset();
     }
     
 }
+
+
+
 console.log("WebSocket server running on ws://localhost:8080");

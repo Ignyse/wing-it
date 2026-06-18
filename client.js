@@ -16,6 +16,10 @@ socket.addEventListener("message", (e) => {
             cleanList();
             showRound(msg.round);
             break;
+        case "endGame":
+            removeButtons();
+            cleanList();
+            break;
         case "readyButton":
             addReadyButton();
             break;

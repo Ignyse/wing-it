@@ -1,5 +1,5 @@
 let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready: 0, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 30, totalRounds:2}
+let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 30, totalRounds:1}
 let stillNotVoted = {};
 // let scores = {}; // by id hmap
 function reset(){
@@ -36,7 +36,6 @@ function newRound(){
         return true;
     }
     else {
-        reset();
         return false;
     }
 }
@@ -149,8 +148,9 @@ function showVotes(){
 
 function getWinner(){
     // returns this pattern: {"id":"2aezylw937t","score":1}
+    // what happens if there is a draw?
     const entries = Object.entries(gameState.players); 
-
+    console.log(`all the players ${JSON.stringify(entries)}`)
     const top = entries.reduce((best, [id, player]) => {
         return player.score > best.score 
         ? { id, score: player.score } 
