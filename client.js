@@ -19,6 +19,9 @@ socket.addEventListener("message", (e) => {
         case "readyButton":
             addReadyButton();
             break;
+        case "removeReadyButton":
+            removeReadyButton();
+            break;
     }
     
     
@@ -110,7 +113,7 @@ function addReadyButton(){
     btn.textContent = "Ready";
     container.appendChild(btn);
     btn.addEventListener("click", (e) => {
-        toggleReady(btn)
+        toggleReady(btn);
         console.log("User toggled ready:");
     });
 }

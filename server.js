@@ -90,6 +90,14 @@ function addReadyButtonClients(){
         }
     })
 }
+
+function removeReadyButtonClients(){
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "removeReadyButton" }));
+        }
+    })
+}
 function broadcastExceptSender(data,socket){
      wss.clients.forEach((client) => {
         if (client != socket && client.readyState == WebSocket.OPEN){
@@ -185,14 +193,14 @@ async function runRound(){
     );
     broadcastAll(`Vote finished.`);
     broadcastAll(JSON.stringify(game.showVotes()));
-    await sleep(game.getConstants().scoreTime*1000);
     // need to add this to like before everyone pass with a safety timer
     addReadyButtonClients();
     await waitUntilOrTimeout(
         // function doesnt exist yet
         () => game.allReady(),
-        30*1000
+        game.getConstants().afkTime*1000
         );
+    removeReadyButtonClients();
     let nextRound = game.newRound();
     if (nextRound){
         broadcastAll(`Next round starting in:`);
