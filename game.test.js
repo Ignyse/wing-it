@@ -72,6 +72,6 @@ test("top score", () =>{
     playerID= game.addPlayer();
     game.addPlayer();
     game.getGameState().players[playerID].score ++;
-    p = {id: playerID, player:game.getGameState().players[playerID] }
-    assert(game.getWinner().id==p.id, `wrong top scorer?, ${JSON.stringify(game.getWinner())} and ${JSON.stringify(p)}`)
+    p = {id: playerID, score:game.getGameState().players[playerID].score }
+    assert(game.getWinner().id==p.id && game.getWinner().score == p.score, `wrong top scorer?, ${JSON.stringify(game.getWinner())} and ${JSON.stringify(p)}`)
 })

@@ -148,15 +148,16 @@ function showVotes(){
 }
 
 function getWinner(){
+    // returns this pattern: {"id":"2aezylw937t","score":1}
     const entries = Object.entries(gameState.players); 
 
-  const top = entries.reduce((best, [id, player]) => {
-    return player.score > best.player.score 
-      ? { id, player } 
-      : best;
-  }, { id: entries[0][0], player: entries[0][1] });
+    const top = entries.reduce((best, [id, player]) => {
+        return player.score > best.score 
+        ? { id, score: player.score } 
+        : best;
+    }, { id: entries[0][0], score: entries[0][1].score });
 
-  return top;
+    return top;
 }
 function handleAction(message){
 
