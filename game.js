@@ -120,6 +120,7 @@ function playerWroteSentence(playerId){
     return Object.values(gameState.playerSentences).map(x => x.host).includes(playerId);
 }
 
+
 function getAllEndings(){
     // add the host sentence too
     gameState.playerSentences.push({sentence: gameState.hostSentence, host: gameState.host});
@@ -130,7 +131,8 @@ function getAllEndings(){
 
 function manageVotes(playerId, votedForId){
     // need startvoting called before 
-    if (stillNotVoted[playerId]==1){
+    // if player not host and not already voted
+    if (gameState.host != playerId && stillNotVoted[playerId]==1){
         stillNotVoted[playerId]=0;
         // gameState.players[votedForId].score++;
         gameState.players[votedForId].vote++;
