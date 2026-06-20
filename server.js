@@ -62,6 +62,7 @@ function handlePlayers(playerId, socket, data){
         broadcastExceptSender(sentence, socket);
         runRound();
   }
+  // gets the sentence of the players except host
   if (game.getHost() != playerId && game.getGameState().status=='answering'){
         game.addPlayerEnding(data.toString(),playerId);
 }

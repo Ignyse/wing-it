@@ -92,3 +92,13 @@ test("test resetVotes ", ()=>{
     .every(player => player.vote === 0);
      assert(allZero, "all votes should be 0");
     })
+
+
+
+test("Test playerWroteSentence, player already voted", () =>{
+    game.reset();
+    id = game.addPlayer();
+    game.getGameState().shortSentence = "Hello i am here";
+    game.addPlayerEnding(" nice", id);
+    assert(game.playerWroteSentence(id), "player not recognized to have already wrote sentence");
+})

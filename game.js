@@ -115,6 +115,11 @@ function addPlayerEnding(ending, playerId){
     console.log(`Added new sentence: ${sentence}`);
 }
 
+function playerWroteSentence(playerId){
+    // (gameState.playerSentences).map(x => x.host == playerId)
+    return Object.values(gameState.playerSentences).map(x => x.host).includes(playerId);
+}
+
 function getAllEndings(){
     // add the host sentence too
     gameState.playerSentences.push({sentence: gameState.hostSentence, host: gameState.host});
@@ -189,4 +194,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes, showVotes};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes, showVotes,playerWroteSentence};
