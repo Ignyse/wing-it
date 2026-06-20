@@ -63,7 +63,7 @@ function handlePlayers(playerId, socket, data){
         runRound();
   }
   // gets the sentence of the players except host
-  if (game.getHost() != playerId && game.getGameState().status=='answering'){
+  if (game.getHost() != playerId && game.getGameState().status=='answering' && !game.playerWroteSentence(playerId)){
         game.addPlayerEnding(data.toString(),playerId);
 }
 }
