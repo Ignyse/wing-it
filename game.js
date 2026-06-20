@@ -131,8 +131,8 @@ function getAllEndings(){
 
 function manageVotes(playerId, votedForId){
     // need startvoting called before 
-    // if player not host and not already voted
-    if (gameState.host != playerId && stillNotVoted[playerId]==1){
+    // if player not host and player not already voted and player didnot vote himself
+    if (gameState.host != playerId && stillNotVoted[playerId]==1 && playerId!=votedForId){
         stillNotVoted[playerId]=0;
         // gameState.players[votedForId].score++;
         gameState.players[votedForId].vote++;
