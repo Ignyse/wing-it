@@ -1,5 +1,5 @@
 let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready: 0, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 30, totalRounds:1}
+let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 30, countdownTime: 5, totalRounds:1}
 let stillNotVoted = {};
 // let scores = {}; // by id hmap
 function reset(){
@@ -71,7 +71,8 @@ function getPlayer(id){
     return player;
 }
 function canStartGame(){
-    if (gameState.status == 'waiting'){
+    // was only waiting, but actually should be only not unavailable to allow for others to pass
+    if (gameState.status != 'unavailable'){
         console.log('Starting the game')
         return true
     }

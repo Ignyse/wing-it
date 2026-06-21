@@ -11,20 +11,20 @@ wss.on("connection", (socket) => {
   counter++;
   const playerId = game.addPlayer();
   sockets[playerId] = socket
-  const result = game.canStartGame();
-  if (result) {
-    broadcastGameStart();
-    game.newRound();
-    if (game.getHost() != -1){
-        const host= sockets[game.getHost()];
-        const hostId=game.getHost();
-        host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
-        Object.entries(sockets).forEach(([id, socket]) => {
-        if (id == hostId) return; 
-            socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
-        });
-    }
-  }
+//   const result = game.canStartGame();
+//   if (result) {
+//     broadcastGameStart();
+//     game.newRound();
+//     if (game.getHost() != -1){
+//         const host= sockets[game.getHost()];
+//         const hostId=game.getHost();
+//         host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
+//         Object.entries(sockets).forEach(([id, socket]) => {
+//         if (id == hostId) return; 
+//             socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
+//         });
+//     }
+//   }
 
   socket.addEventListener("message", (e) => {
     const msg = JSON.parse(e.data);
@@ -157,12 +157,26 @@ function startCountdownPromise(onTick, time){
     
 }
 
+
+// MAYBE REMOVE
 function broadcastGameStart(){
     startCountdown(
         (count) => broadcastAll(`Game Starting in ${count}`),
         () => broadcastAll('Game Started !'),
         5
     );
+}
+
+async function broadcastRoundStartPromise(){
+    await startCountdownPromise(
+        (count) => broadcastAll(`Round Starting in ${count}`),
+        () => broadcastAll('Round Started !'),
+        game.getConstants().countdownTime
+    );
+}
+
+function broadcastStart(text){
+    return ;
 }
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -194,7 +208,31 @@ function handleEndGame(){
             client.send(JSON.stringify({ type: "endGame"}));
         }});
 }
-async function runRound(){
+
+
+/*
+Countdown to start round
+select host
+change to playing status after that
+*/
+function beginningRound(){
+    // does this need to be async too or not, to block user writing
+    broadcastRoundStartPromise();
+    game.newRound();
+    handleNewRound();
+    // if host selected
+    if (game.getHost() != -1){
+        const host= sockets[game.getHost()];
+        const hostId=game.getHost();
+        host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
+        Object.entries(sockets).forEach(([id, socket]) => {
+        if (id == hostId) return; 
+            socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
+        });
+    }
+}
+
+async function answeringRound(){
     broadcastAll(`Time left to write:`);
     await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
@@ -202,15 +240,16 @@ async function runRound(){
     );
     await sleep(1000); // wait 1 second
     broadcastAll(`Time's up`); 
+}
+
+async function votingRound(){
     game.startVoting();
     // need to call here otherwise duplicates
     let endings = game.getAllEndings();
-    console.log(`all endings ${endings}`)
     wss.clients.forEach((client) => {
         console.log("state:", client.readyState);
         if (client.readyState == WebSocket.OPEN){
             client.send(JSON.stringify({ type: "showSentences", sentences: endings }));
-            console.log(JSON.stringify({ type: "showSentences", sentences: endings }))
         }});
     broadcastAll(`Time left to vote:`);
     await startCountdownPromise(
@@ -219,6 +258,9 @@ async function runRound(){
     );
     await sleep(1000); // wait 1 second
     broadcastAll(`Vote finished.`);
+}
+
+async function endRound(){
     broadcastAll(JSON.stringify(game.showVotes()));
     // need to add this to like before everyone pass with a safety timer
     addReadyButtonClients();
@@ -229,23 +271,23 @@ async function runRound(){
         );
     removeReadyButtonClients();
     let nextRound = game.newRound();
-    if (nextRound){
-        broadcastAll(`Next round starting in:`);
-        handleNewRound();
-        await startCountdownPromise(
-            (count) => broadcastAll(`${count} s`),
-            game.getConstants().startTime
-        );
-        
-        if (game.getHost() != -1){
-            const host= sockets[game.getHost()];
-            const hostId=game.getHost();
-            host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
-            Object.entries(sockets).forEach(([id, socket]) => {
-            if (id == hostId) return; 
-                socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host to confuse others!" }));
-            });
-        }
+    return nextRound;
+}
+/*
+Flow:
+Initial: runRound called by the ready start game button of players, check if he can start the game (waiting status)
+Normal Flow:Initialize parameters of round + Start broadcasting start, after broadcasting change the status to playing (host can type)
+*/
+async function runRound(){
+    // only with unavailable will it quit
+    const canStart = game.canStartGame();
+    if (!canStart) return;
+    beginningRound();
+    answeringRound();
+    votingRound();
+    stillPlaying = endRound();
+    if (stillPlaying){
+        runRound();
     }
     else{
         handleEndGame();
@@ -253,8 +295,69 @@ async function runRound(){
         broadcastAll(`Game finished. Player ${winner.id} won with score ${winner.score}.`);
         game.reset();
     }
-    
 }
+
+// async function runRound(){
+//     broadcastAll(`Time left to write:`);
+//     await startCountdownPromise(
+//         (count) => broadcastAll(`${count} s`),
+//         game.getConstants().answerTime
+//     );
+//     await sleep(1000); // wait 1 second
+//     broadcastAll(`Time's up`); 
+//     game.startVoting();
+//     // need to call here otherwise duplicates
+//     let endings = game.getAllEndings();
+//     console.log(`all endings ${endings}`)
+//     wss.clients.forEach((client) => {
+//         console.log("state:", client.readyState);
+//         if (client.readyState == WebSocket.OPEN){
+//             client.send(JSON.stringify({ type: "showSentences", sentences: endings }));
+//             console.log(JSON.stringify({ type: "showSentences", sentences: endings }))
+//         }});
+//     broadcastAll(`Time left to vote:`);
+//     await startCountdownPromise(
+//         (count) => broadcastAll(`${count} s`),
+//         game.getConstants().voteTime
+//     );
+//     await sleep(1000); // wait 1 second
+//     broadcastAll(`Vote finished.`);
+//     broadcastAll(JSON.stringify(game.showVotes()));
+//     // need to add this to like before everyone pass with a safety timer
+//     addReadyButtonClients();
+//     await waitUntilOrTimeout(
+//         // function doesnt exist yet
+//         () => game.allReady(),
+//         game.getConstants().afkTime*1000
+//         );
+//     removeReadyButtonClients();
+//     let nextRound = game.newRound();
+//     if (nextRound){
+//         broadcastAll(`Next round starting in:`);
+//         handleNewRound();
+//         await startCountdownPromise(
+//             (count) => broadcastAll(`${count} s`),
+//             game.getConstants().startTime
+//         );
+        
+//         if (game.getHost() != -1){
+//             const host= sockets[game.getHost()];
+//             const hostId=game.getHost();
+//             host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
+//             Object.entries(sockets).forEach(([id, socket]) => {
+//             if (id == hostId) return; 
+//                 socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host to confuse others!" }));
+//             });
+//         }
+//     }
+//     else{
+//         handleEndGame();
+//         const winner = game.getWinner();
+//         broadcastAll(`Game finished. Player ${winner.id} won with score ${winner.score}.`);
+//         game.reset();
+//     }
+    
+// }
 
 
 
