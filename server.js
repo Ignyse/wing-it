@@ -11,6 +11,9 @@ wss.on("connection", (socket) => {
   counter++;
   const playerId = game.addPlayer();
   sockets[playerId] = socket
+  const enoughPlayer = game.canStartGame();
+  socket.send(JSON.stringify({type: `addNewGameButton`}))
+
 //   const result = game.canStartGame();
 //   if (result) {
 //     broadcastGameStart();
@@ -41,6 +44,10 @@ wss.on("connection", (socket) => {
         case "ready-off":
             handleReadyOff();
             break;
+        case "start-game":
+            handleReadyOn();
+            handleStartGame();
+            break;
     }
 });
 
@@ -60,7 +67,6 @@ function handlePlayers(playerId, socket, data){
         console.log("Received:", data.toString());
         sentence = game.createGameSentence(data.toString());
         broadcastExceptSender(sentence, socket);
-        runRound();
   }
   // gets the sentence of the players except host
   if (game.getHost() != playerId && game.getGameState().status=='answering' && !game.playerWroteSentence(playerId)){
@@ -83,6 +89,46 @@ function handleReadyOn(){
         }
     });
     
+}
+
+// not async because i allow more player to join
+function handleStartGame(){
+    if (!game.getGameState().initiatedGame){
+        // if enough player to start initiate and status on unaviable before
+        if(game.canStartGame() && game.getGameState().ready>= game.getConstants().minPlayers){
+            game.initiateGame();
+            // first if all ready then stop interval return 0 otherwise inteval goes down by 1
+            // on Done start the round process
+            beginStartProcess(
+                (count)=>{broadcastAll(`Game Starting in ${count}`); return game.allReady() ? 0: count-1},
+                ()=>{broadcastAll("Game starts"); runRound();},
+                game.getConstants().countdownTime
+            );
+        }
+    }
+}
+
+
+function beginStartProcess(onTick, onDone,time){
+    let count = time 
+    const interval = setInterval( ()=> {
+        count = onTick(count);
+        if (count <= 0){
+            clearInterval(interval);
+            setTimeout(() => {
+                onDone();
+            }, 1000);
+        }
+    }, 1000)
+}
+
+
+function broadcastGameStart(){
+    startCountdown(
+        (count) => broadcastAll(`Game Starting in ${count}`),
+        () => broadcastAll('Game Started !'),
+        5
+    );
 }
 
 function handleReadyOff(){
@@ -130,19 +176,8 @@ function broadcastAll(res){
     });
 }
 
-function startCountdown(onTick, onDone, time){
-    let count = time // 5 seconds
-    const interval = setInterval( ()=> {
-        onTick(count);
-        count --;
-        if (count <= 0){
-            clearInterval(interval);
-            setTimeout(onDone, 1000);
-        }
-    }, 1000)
-}
 
-function startCountdownPromise(onTick, time){
+function startCountdownPromise(onTick, onDone, time){
     return new Promise((resolve) =>{
         let count = time // 5 seconds
         const interval = setInterval( ()=> {
@@ -150,7 +185,11 @@ function startCountdownPromise(onTick, time){
         count --;
         if (count <= 0){
             clearInterval(interval);
-            resolve();
+            setTimeout(() => {
+                onDone();
+                resolve();
+            }, 1000);;
+
         }
     }, 1000)
     });
@@ -215,9 +254,9 @@ Countdown to start round
 select host
 change to playing status after that
 */
-function beginningRound(){
+async function beginningRound(){
     // does this need to be async too or not, to block user writing
-    broadcastRoundStartPromise();
+    await broadcastRoundStartPromise();
     game.newRound();
     handleNewRound();
     // if host selected
@@ -236,10 +275,11 @@ async function answeringRound(){
     broadcastAll(`Time left to write:`);
     await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
+        () => broadcastAll(`Time's up`),
         game.getConstants().answerTime
     );
-    await sleep(1000); // wait 1 second
-    broadcastAll(`Time's up`); 
+    // await sleep(1000); // wait 1 second
+    
 }
 
 async function votingRound(){
@@ -254,10 +294,11 @@ async function votingRound(){
     broadcastAll(`Time left to vote:`);
     await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
+        () =>     broadcastAll(`Vote finished.`),
         game.getConstants().voteTime
     );
-    await sleep(1000); // wait 1 second
-    broadcastAll(`Vote finished.`);
+    // await sleep(1000); // wait 1 second
+
 }
 
 async function endRound(){
@@ -282,10 +323,10 @@ async function runRound(){
     // only with unavailable will it quit
     const canStart = game.canStartGame();
     if (!canStart) return;
-    beginningRound();
-    answeringRound();
-    votingRound();
-    stillPlaying = endRound();
+    await beginningRound();
+    await answeringRound();
+    await votingRound();
+    stillPlaying = await endRound();
     if (stillPlaying){
         runRound();
     }

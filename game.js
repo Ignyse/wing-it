@@ -1,13 +1,16 @@
-let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready: 0, hostSentence: "", shortSentence: "",playerSentences: [] };
-let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 30, countdownTime: 5, totalRounds:1}
+let gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready: 0, initiatedGame: false, hostSentence: "", shortSentence: "",playerSentences: [] };
+let constants = {answerTime: 9, voteTime: 4, startTime: 1, scoreTime:10, afkTime: 30, countdownTime: 5, minPlayers: 3, totalRounds:1}
 let stillNotVoted = {};
 // let scores = {}; // by id hmap
 function reset(){
-    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready:0, hostSentence: "",shortSentence:"", playerSentences: []};
+    gameState = { players: {}, round: 1, status: 'unavailable', host: -1, ready:0, initiatedGame:false, hostSentence: "",shortSentence:"", playerSentences: []};
 }
 
 function getConstants(){
     return constants;
+}
+function initiateGame(){
+    gameState.initiatedGame = true;
 }
 function resetGameSamePlayers(){
     gameState.status = 'waiting'
@@ -197,4 +200,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes, showVotes,playerWroteSentence};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes, showVotes,initiateGame, playerWroteSentence};

@@ -30,8 +30,12 @@ socket.addEventListener("message", (e) => {
             whoReady(msg.text);
             break;
         case "addNewGameButton":
-            addNewGameButton();
+            addNewGameButton("start-game");
             break;
+        // case "enoughPlayersButton":
+        //     addNewGameButton("start-game");
+        //     break;
+
     }
     
     
@@ -123,7 +127,7 @@ function addReadyButton(){
     btn.textContent = "Ready";
     container.appendChild(btn);
     btn.addEventListener("click", (e) => {
-        toggleReady(btn);
+        toggleReady(btn, 'ready-on');
         console.log("User toggled ready:");
     });
 }
@@ -134,7 +138,7 @@ function removeReadyButton(){
         container.removeChild(container.firstChild);
     }
 }
-function toggleReady(btn) {
+function toggleReady(btn, msgOn) {
   const isTicked = btn.classList.contains("ticked");
 
   if (isTicked) {
@@ -142,7 +146,7 @@ function toggleReady(btn) {
     socket.send(JSON.stringify({type: 'ready-off'}))
   } else {
     btn.classList.add("ticked");
-    socket.send(JSON.stringify({type: 'ready-on'}))
+    socket.send(JSON.stringify({type: msgOn}))
   }
 }
 
@@ -152,13 +156,15 @@ function whoReady(text){
 }
 
 
-function addNewGameButton(){
+function addNewGameButton(msg){
     const container = document.getElementById("log");
     var btn = document.createElement("button");
-    btn.textContent = "Ready";
+    btn.textContent = msg;
     container.appendChild(btn);
     btn.addEventListener("click", (e) => {
-        toggleReady(btn);
-        console.log("User toggled new game:");
+        toggleReady(btn, msg);
+        console.log(`User toggled ${msg}`);
     });
 }
+
+
