@@ -304,6 +304,13 @@ async function votingRound(){
 async function endRound(){
     broadcastAll(JSON.stringify(game.showVotes()));
     // need to add this to like before everyone pass with a safety timer
+    // need reset because already ready from before
+    game.resetReady();
+    wss.clients.forEach((client)=>{
+        if (client.readyState == WebSocket.OPEN){
+             client.send(JSON.stringify({ type: "updateReadyAmount", text: game.getAmountReady() }));
+        }
+    });
     addReadyButtonClients();
     await waitUntilOrTimeout(
         // function doesnt exist yet
@@ -311,8 +318,12 @@ async function endRound(){
         game.getConstants().afkTime*1000
         );
     removeReadyButtonClients();
-    let nextRound = game.newRound();
-    return nextRound;
+    // let nextRound = game.newRound();
+    // return nextRound;
+}
+
+async function nextRound(){
+
 }
 /*
 Flow:
@@ -326,11 +337,14 @@ async function runRound(){
     await beginningRound();
     await answeringRound();
     await votingRound();
-    stillPlaying = await endRound();
+    // stillPlaying = endRound();
+    await endRound();
+    const stillPlaying = game.newRound();
     if (stillPlaying){
         runRound();
     }
     else{
+        // maybe change this is just for not instant end game
         handleEndGame();
         const winner = game.getWinner();
         broadcastAll(`Game finished. Player ${winner.id} won with score ${winner.score}.`);

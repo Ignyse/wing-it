@@ -12,6 +12,9 @@ function getConstants(){
 function initiateGame(){
     gameState.initiatedGame = true;
 }
+function resetReady(){
+    gameState.ready = 0;
+}
 function resetGameSamePlayers(){
     gameState.status = 'waiting'
     gameState.round = 1
@@ -200,4 +203,4 @@ function handleAction(message){
 
 
 module.exports = { reset, addPlayer, getPlayer,checkMinPlayers,getGameState, canStartGame, removePlayer, 
-    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, getWinner, resetVotes, showVotes,initiateGame, playerWroteSentence};
+    getHost, selectHost, newRound, addPlayerEnding, handleAction,resetGameSamePlayers,createGameSentence, startVoting, manageVotes, getConstants,getRound, showScores, getAllEndings, allReady, addReady, removeReady,getAmountReady, resetReady, getWinner, resetVotes, showVotes,initiateGame, playerWroteSentence};
