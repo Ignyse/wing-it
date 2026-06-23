@@ -135,13 +135,21 @@ function removeReadyButtonClients(){
         }
     })
 }
-function broadcastExceptSender(data,socket){
+function broadcastExceptSender(data,id){
      wss.clients.forEach((client) => {
-        if (client != socket && client.readyState == WebSocket.OPEN){
+        if (client != sockets[id] && client.readyState == WebSocket.OPEN){
             // client.send(data.toString());
             client.send(JSON.stringify({ type: "broadcast", text: data.toString() }));
         }
     });
+}
+
+function broadcastHost(data){
+    const host = sockets[game.getHost()]
+    if (host.readyState == WebSocket.OPEN){
+        host.send(JSON.stringify({ type: "broadcast", text: data.toString() }));
+    }
+
 }
 
 function broadcastAll(res){
@@ -231,18 +239,27 @@ async function beginningRound(){
     handleNewRound();
     // if host selected
     if (game.getHost() != -1){
-        const host= sockets[game.getHost()];
-        const hostId=game.getHost();
-        host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
-        Object.entries(sockets).forEach(([id, socket]) => {
-        if (id == hostId) return; 
-            socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
-        });
+        // const host= sockets[game.getHost()];
+        // const hostId=game.getHost();
+        // host.send(JSON.stringify({ type: "broadcast", text: "You are the host" }));
+        // Object.entries(sockets).forEach(([id, socket]) => {
+        // if (id == hostId) return; 
+        //     socket.send(JSON.stringify({ type: "broadcast", text: "Finish the sentence of the host, to confuse others!" }));
+        // });
+        broadcastHost(`You are the host. Create a sentence`)
+        broadcastExceptSender(`Host is making his sentence. Afterwards, finith the sentence of the host to confuse others!`, game.getHost())
+        await startCountdownPromise(
+            (count) => broadcastAll(`${count} s`),
+            () => broadcastAll(`Time's up`),
+            game.getConstants().answerTime
+    );
+
     }
 }
 
 async function answeringRound(){
-    broadcastAll(`Time left to write:`);
+    broadcastExceptSender(`Time left to finish sentence:`, game.getHost())
+    broadcastHost(`Time left for players to finish sentence: `);
     await startCountdownPromise(
         (count) => broadcastAll(`${count} s`),
         () => broadcastAll(`Time's up`),

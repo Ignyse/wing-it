@@ -32,6 +32,9 @@ socket.addEventListener("message", (e) => {
         case "addNewGameButton":
             addNewGameButton("start-game");
             break;
+        case "replayGameButton":
+            addNewGameButton("start-game");
+            break;
         // case "enoughPlayersButton":
         //     addNewGameButton("start-game");
         //     break;
